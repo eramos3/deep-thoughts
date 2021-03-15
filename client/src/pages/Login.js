@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
+import { useMutation } from '@apollo/react-hooks';
+import { LOGIN_USER } from '../utils/mutations';
+import Auth from '../utils/auth';
 
 const Login = (props) => {
   const [formState, setFormState] = useState({ email: '', password: '' });
+  const [login, { error }] = useMutation(LOGIN_USER);
 
   // update state based on form input changes
   const handleChange = (event) => {
@@ -14,15 +18,20 @@ const Login = (props) => {
   };
 
   // submit form
-  const handleFormSubmit = async (event) => {
-    event.preventDefault();
+// submit form
+const handleFormSubmit = async event => {
+  event.preventDefault();
 
-    // clear form values
-    setFormState({
-      email: '',
-      password: '',
+  try {
+    const { data } = await login({
+      variables: { ...formState }
     });
-  };
+  
+    Auth.login(data.login.token);
+  } catch (e) {
+    console.error(e);
+  }
+};
 
   return (
     <main className='flex-row justify-center mb-4'>
@@ -53,6 +62,7 @@ const Login = (props) => {
                 Submit
               </button>
             </form>
+            {error && <div>Login failed</div>}
           </div>
         </div>
       </div>
